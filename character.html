@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>打字游戏</title>
+		<style type="text/css">
+			body {
+				margin: 0 0 0 0;
+			}
+			
+			.main {
+				border: 1px dashed darkgoldenrod;
+				width: 600px;
+				height: 300px;
+			}
+			
+			.word {
+				position: absolute;
+				top: 0px;
+			}
+			
+			.bullet {
+				position: absolute;
+				top: 300px;
+				color: goldenrod;
+			}
+		</style>
+		<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+		<script type="text/javascript">
+			var idx = 0;
+			$(document).ready(function() {
+				// 每隔XX毫秒，产生一个字母，散落在任意的顶部位置
+				setInterval(function run() {
+					var word = null;
+					while(true) {
+						// 随机产生26个字母中的任一个
+						var t = String.fromCharCode(97 + Math.floor(Math.random() * 100 % 26)).toUpperCase();
+						// 判断该字母在屏幕上不存在
+						if($("span[code='" + t + "']").length == 0) {
+							word = t;
+							break;
+						}
+					}
+					var wordSpan = $('<span code="' + word + '" class="word" id="word_' + (idx++) + '">' + (word) + '</span>')
+						.css("left", Math.floor(Math.random() * 1000 % $("#mainDiv").width()));
+					$("#mainDiv").append(wordSpan);
+				}, 600);
+
+				// 每隔XX毫秒，字母往下走10像素，当超过高度，则消失
+				setInterval(function run() {
+					$(".word").each(function() {
+						$(this).css("top", $(this).position().top + 10);
+						if($(this).position().top >= $("#mainDiv").height()) {
+							$(this).remove();
+							$("#tip").text(parseInt($("#tip").text()) + 1);
+						}
+					});
+				}, 200);
+
+				$(document).keypress(function(e) { // 监听按键事件
+					var w = String.fromCharCode(e.keyCode).toUpperCase();
+					// 查找没有子弹对应的字母
+					if($("span[code='" + w + "']").not("[fire]").length > 0) {
+						// 将有子弹匹配的字母打上标记
+						var fw = $($("span[code='" + w + "']")[0]).attr("fire", true);
+						var wordSpan = $('<span flag="' + fw.attr("id") + '" class="bullet">' + (w) + '</span>')
+							.css("left", fw.position().left);
+						$("#mainDiv").append(wordSpan);
+					}
+				});
+
+				// 每隔XX毫秒，子弹往上走10像素，当超过字母，则消失
+				setInterval(function run() {
+					$(".bullet").each(function() {
+						$(this).css("top", $(this).position().top - 10);
+						if($(this).position().top <= $("#" + $(this).attr("flag")).position().top) {
+							$(this).remove();
+							$("#" + $(this).attr("flag")).css("color", "red").fadeOut(100).remove();
+							$("#tip2").text(parseInt($("#tip2").text()) + 1);
+						}
+					});
+				}, 200);
+
+			});
+		</script>
+	</head>
+
+	<body>
+		<div id="mainDiv" class="main">
+		</div>
+		<br />
+		<br /> 总共已经逃跑
+		<span id="tip">0</span>个字母
+		<br /> 总共已经击落
+		<span id="tip2">0</span>个字母
+
+	</body>
+
+</html>
